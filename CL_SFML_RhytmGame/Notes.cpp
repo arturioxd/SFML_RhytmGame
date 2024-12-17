@@ -9,9 +9,15 @@ void Notes::initNote()
 {
 	singleNote.setSize(sf::Vector2f(50.f, 50.f));
 	singleNote.setFillColor(sf::Color::Green);
+	singleNote.setOutlineColor(sf::Color::Black);
+	singleNote.setOutlineThickness(1.f);
 	float xPos = 200.f * this->laneId + 70.f;
 	singleNote.setPosition(xPos, 0.f);
 }
+
+
+
+// - - - public:
 
 Notes::Notes(int lane) : laneId(lane), isActive(true)
 {
@@ -32,7 +38,6 @@ void Notes::renderNote(sf::RenderWindow& window)
 	if (isActive)
 	{
 		window.draw(this->singleNote);
-
 	}
 }
 

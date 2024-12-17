@@ -4,7 +4,8 @@
 #include <iostream>
 #include <vector>
 #include "Notes.h"
-
+#include <chrono>
+#include <thread>
 
 
 
@@ -44,6 +45,11 @@ private:
 
 
 	// - - - Ноти, нотна полоса та чекер:
+
+	//BPM:
+	float BPM = 120.0f;
+	float spawnInterval = 0.0f;
+	sf::Clock noteSpawnClock;
 	
 	//Полоса для нот
 	std::vector<sf::RectangleShape> noteLines;
@@ -53,9 +59,6 @@ private:
 
 	//Вектор зберігаючий ноти
 	std::vector<Notes> notes;
-
-	//Годиннки спавну нот
-	sf::Clock spawnClock;
 
 	//Скільки пройшло від останнього спавну
 	float spawnTimer;
@@ -111,12 +114,16 @@ private:
 	
 	//Булева змінна потреби виклику повідомлення про попадання
 	bool showHitTrueText = false;
+
 	//Булева змінна потреби виклику повідомлення про промах
 	bool showHitFalseText = false;
+
 	//Змінна для тексту про попадання
 	sf::Text hitTrueText;
+
 	//Змінна для тексту про промах
 	sf::Text hitFalseText;
+
 	//Змінна для тривалості відображення повідомлення про попадання/промах
 	float hitTextDuration;
 
@@ -128,6 +135,14 @@ private:
 
 	//Музика
 	sf::Music backgroundMusic;
+	
+	//Затримка
+	sf::Clock delayMusicClock;
+	
+	//Затримка перед початком музики
+	float delayTime;
+	//Булева змінна чи музика грає
+	bool isMusicPlaying = false;
 
 	//Годинник
 	sf::Clock clock;
@@ -167,7 +182,7 @@ public:
 	const bool running();
 	
 	//Валідація нот
-	void validatedIntersect(int line, int pressTime, sf::Keyboard::Key);
+	void validatedIntersect(int line, sf::Keyboard::Key);
 
 	//Попадання
 	void hitTrue();

@@ -4,7 +4,7 @@ Game::Game()
 {
 	this->currentState = GameState::MENU;
 	this->initMenu();
-	//this->initMusic();
+	this->initMusic();
 	this->initWindow();
 	this->initInfo();
 	this->initVariables();
@@ -53,6 +53,12 @@ void Game::initVariables()
 	this->hitFalseText.setOutlineThickness(1.f);
 
 	this->hitTextDuration = 0.5f;
+
+	this->BPM = 120.0f;
+	this->spawnInterval = (60.0f / this->BPM) * 1000.0f;
+
+	this->delayTime = 3.f;
+
 }
 
 void Game::initNoteLine() 
@@ -100,14 +106,15 @@ void Game::initMenu()
 
 void Game::initMusic()
 {
-	if (!this->backgroundMusic.openFromFile("C:/UN/CL/CL_SFML_RhytmGame/assets/music/domecano.ogg"))
+
+	if (!this->backgroundMusic.openFromFile("C:/UN/CL/CL_SFML_RhytmGame/assets/music/bitQuest.ogg"))
 	{
 		std::cout << "Error: Could not load music file!\n";
 	}
 	else
 	{
 		this->backgroundMusic.setLoop(true);
-		this->backgroundMusic.setVolume(30); 
+		this->backgroundMusic.setVolume(30);
 	}
 }
 
@@ -136,7 +143,7 @@ void Game::initInfo()
 
 void Game::spawnNotes()
 {
-	if ((this->spawnClock.getElapsedTime().asMilliseconds() >= spawnTimerMax)/* && this->notes.size() < 2*/)
+	if ((this->noteSpawnClock.getElapsedTime().asMilliseconds() >= this->spawnInterval))
 	{
 		int lane = rand() % 3;
 		
@@ -158,7 +165,7 @@ void Game::spawnNotes()
 			this->notes.emplace_back(lane);
 		}
 
-		this->spawnClock.restart();
+		this->noteSpawnClock.restart();
 	}
 }
 
@@ -171,7 +178,7 @@ const bool Game::running()
 	return this->window->isOpen();
 }
 
-void Game::validatedIntersect(int line, int pressTime, sf::Keyboard::Key key)
+void Game::validatedIntersect(int line, sf::Keyboard::Key key)
 {
 	bool hit = false;
 	for (size_t i = 0; i < notes.size(); i++)
@@ -206,8 +213,6 @@ void Game::hitTrue()
 	this->showHitTrueText = true;
 	this->showHitFalseText = false;
 	this->hitTextClock.restart();
-
-	std::cout << "Hit! Score: " << this->score << " Streak: " << currentStreak << " Best: " << bestStreak << std::endl;
 }
 
 void Game::hitFalse()
@@ -219,8 +224,6 @@ void Game::hitFalse()
 	this->showHitTrueText = false;
 	this->showHitFalseText = true;
 	this->hitTextClock.restart();
-
-	std::cout << "Miss" << std::endl;
 }
 
 void Game::pollEvents() 
@@ -233,7 +236,6 @@ void Game::pollEvents()
 			if (ev.type == sf::Event::KeyPressed && ev.key.code == sf::Keyboard::Enter)
 			{
 				this->currentState = GameState::PLAYING;
-				this->backgroundMusic.play();
 
 			}
 			else if (ev.type == sf::Event::KeyPressed && ev.key.code == sf::Keyboard::Escape)
@@ -243,7 +245,11 @@ void Game::pollEvents()
 		}
 		else if (this->currentState == GameState::PLAYING)
 		{
-
+			if (!isMusicPlaying && delayMusicClock.getElapsedTime().asSeconds() >= delayTime)
+			{
+				this->backgroundMusic.play();
+				isMusicPlaying = true;
+			}
 			switch (this->ev.type)
 			{
 
@@ -253,26 +259,25 @@ void Game::pollEvents()
 
 			case sf::Event::KeyPressed:
 			{
-				int currentTime = this->clock.getElapsedTime().asMilliseconds();
 				if (ev.key.code == sf::Keyboard::Escape)
 				{
 					this->window->close();
 				}
 				else if (ev.key.code == sf::Keyboard::A)
 				{
-					this->validatedIntersect(0, currentTime, sf::Keyboard::A);
+					this->validatedIntersect(0, sf::Keyboard::A);
 					this->noteLines[0].setFillColor(sf::Color(189, 195, 199));
 					this->keyPressTimers[0] = this->clock.getElapsedTime().asMilliseconds();
 				}
 				else if (ev.key.code == sf::Keyboard::S)
 				{
-					this->validatedIntersect(1, currentTime, sf::Keyboard::S);
+					this->validatedIntersect(1, sf::Keyboard::S);
 					this->noteLines[1].setFillColor(sf::Color(189, 195, 199));
 					this->keyPressTimers[1] = this->clock.getElapsedTime().asMilliseconds();
 				}
 				else if (ev.key.code == sf::Keyboard::D)
 				{
-					this->validatedIntersect(2, currentTime, sf::Keyboard::D);
+					this->validatedIntersect(2, sf::Keyboard::D);
 					this->noteLines[2].setFillColor(sf::Color(189, 195, 199));
 					this->keyPressTimers[2] = this->clock.getElapsedTime().asMilliseconds();
 				}
