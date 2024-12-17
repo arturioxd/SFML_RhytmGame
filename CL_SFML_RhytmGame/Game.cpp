@@ -35,6 +35,24 @@ void Game::initVariables()
 {
 	this->spawnTimer = 0.f;
 	this->spawnTimerMax = 500.f;
+
+	this->hitTrueText.setString("Good!");
+	this->hitTrueText.setFont(this->font);
+	this->hitTrueText.setCharacterSize(100);
+	this->hitTrueText.setFillColor(sf::Color::Green);
+	this->hitTrueText.setPosition(200.f, 100.f);
+	this->hitTrueText.setOutlineColor(sf::Color::Black);
+	this->hitTrueText.setOutlineThickness(1.f);
+
+	this->hitFalseText.setString("Bad!");
+	this->hitFalseText.setFont(this->font);
+	this->hitFalseText.setCharacterSize(100);
+	this->hitFalseText.setFillColor(sf::Color::Red);
+	this->hitFalseText.setPosition(200.f, 100.f);
+	this->hitFalseText.setOutlineColor(sf::Color::Black);
+	this->hitFalseText.setOutlineThickness(1.f);
+
+	this->hitTextDuration = 0.5f;
 }
 
 void Game::initNoteLine() 
@@ -144,6 +162,8 @@ void Game::spawnNotes()
 	}
 }
 
+
+
 // - - - public:
 
 const bool Game::running() 
@@ -182,6 +202,10 @@ void Game::hitTrue()
 	{
 		this->bestStreak = this->currentStreak;
 	}
+	
+	this->showHitTrueText = true;
+	this->showHitFalseText = false;
+	this->hitTextClock.restart();
 
 	std::cout << "Hit! Score: " << this->score << " Streak: " << currentStreak << " Best: " << bestStreak << std::endl;
 }
@@ -189,6 +213,13 @@ void Game::hitTrue()
 void Game::hitFalse()
 {
 	this->currentStreak = 0;
+	this->window->draw(hitFalseText);
+
+
+	this->showHitTrueText = false;
+	this->showHitFalseText = true;
+	this->hitTextClock.restart();
+
 	std::cout << "Miss" << std::endl;
 }
 
@@ -296,6 +327,12 @@ void Game::update()
 		this->updateInfo();
 		this->spawnNotes();
 
+		if (this->hitTextClock.getElapsedTime().asSeconds() >= this->hitTextDuration)
+		{
+			this->showHitTrueText = false;
+			this->showHitFalseText = false;
+		}
+
 		for (size_t i = 0; i < notes.size(); i++)
 		{
 			if (!notes[i].getAct() || this->notes[i].isOffScreen())
@@ -365,6 +402,16 @@ void Game::render()
 			note.renderNote(*this->window);
 
 		}
+
+		if (this->showHitTrueText)
+		{
+			this->window->draw(hitTrueText);
+		}
+		else if (this->showHitFalseText)
+		{
+			this->window->draw(hitFalseText);
+		}
+
 	}
 	this->window->display();
 } 

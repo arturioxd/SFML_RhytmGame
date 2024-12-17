@@ -12,6 +12,12 @@ class Game
 {
 
 private:
+	
+	//Доступні стани гри
+	enum GameState { MENU, PLAYING, GAME_OVER };
+
+
+
 	// - - - Вікно:
 	//Головне вікно
 	sf::RenderWindow* window;
@@ -22,24 +28,22 @@ private:
 	//Характеристики вікна
 	sf::VideoMode videoMode;
 
-
-
-	// - - - Об'єкти та змінні:
-
-	//Доступні стани гри
-	enum GameState { MENU, PLAYING, GAME_OVER };
-	
 	//Поточний стан гри
 	GameState currentState;
-	
-	//Заголовок гри
-	sf::Text title;
-	
+
+
+
+	// - - - MENU:
+
 	//Інструкції щодо початку гри
 	sf::Text instructions;
-	
-	//Шрифт
-	sf::Font font;
+
+	//Заголовок гри
+	sf::Text title;
+
+
+
+	// - - - Ноти, нотна полоса та чекер:
 	
 	//Полоса для нот
 	std::vector<sf::RectangleShape> noteLines;
@@ -55,18 +59,72 @@ private:
 
 	//Скільки пройшло від останнього спавну
 	float spawnTimer;
-	
+
 	//Інтервал спавну нот
 	float spawnTimerMax;
-	
+
 	//Лінія перевірки
 	sf::RectangleShape checker;
-	
-	//Вектор для часу натискання клавіші нотних ліній
-	std::vector<int> keyPressTimers; 
 
 	//Час для натискання чекера
 	int checkerTimer;
+
+	//Вектор для часу натискання клавіші нотних ліній
+	std::vector<int> keyPressTimers;
+
+
+
+	// - - - Інформаційна панель:
+	 
+	//Панель для відображення інформації
+	sf::RectangleShape infoShape;
+
+	//Рахунок гравця
+	int score;
+
+	//Поточна серія
+	int currentStreak;
+	
+	//Найкраща серія
+	int bestStreak;
+	
+	//Вивід рахунку
+	sf::Text showScore;
+	
+	//Вивід поточної серії
+	sf::Text showCurrentStreak;
+	
+	//Вивід найкращої серії
+	sf::Text showBestStreak;
+	
+
+
+	// - - - Гравець:
+	/* Not yet*/
+	
+
+
+	// - - - Hit - Miss система:
+	
+	//Годинник для відображення повідомлень
+	sf::Clock hitTextClock;
+	
+	//Булева змінна потреби виклику повідомлення про попадання
+	bool showHitTrueText = false;
+	//Булева змінна потреби виклику повідомлення про промах
+	bool showHitFalseText = false;
+	//Змінна для тексту про попадання
+	sf::Text hitTrueText;
+	//Змінна для тексту про промах
+	sf::Text hitFalseText;
+	//Змінна для тривалості відображення повідомлення про попадання/промах
+	float hitTextDuration;
+
+
+
+	// - - - Інше:
+	//Шрифт
+	sf::Font font;
 
 	//Музика
 	sf::Music backgroundMusic;
@@ -74,57 +132,28 @@ private:
 	//Годинник
 	sf::Clock clock;
 
-	//Рахунок гравця
-	int score;
-	//Поточна серія
-	int currentStreak;
-	//Найкраща серія
-	int bestStreak;
-
-	//Інфо квадрат
-	sf::RectangleShape infoShape;
-
-	// Гравець
-	/* Not yet*/
-
-	//Вивід рахунку
-	sf::Text showScore;
-	//Вивід поточної серії
-	sf::Text showCurrentStreak;
-	//Вивід найкращої серії
-	sf::Text showBestStreak;
-
-
-	sf::Text hitTrueText;
-	sf::Text hitFalseText;
-
 
 
 	// - - - Ініціалізація:
 	
 	//Ініціалізація початкових змінних
 	void initVariables();
-	
 	//Ініціалізація нотної лінії
 	void initNoteLine();
-
 	//Ініціалізація вікна
 	void initWindow();
-	
 	//Ініціалізація лінії перевірки
 	void initChecker();
-
 	//Ініціалізація меню
 	void initMenu();
-
 	//Ініціалізація музики
 	void initMusic();
-
 	//Спавн нот
 	void spawnNotes();
-
 	//Ініціалізація панелі з інформацією
 	void initInfo();
+
+
 	
 public:
 
