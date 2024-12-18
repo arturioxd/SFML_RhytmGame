@@ -63,7 +63,7 @@ public:
 	void renderNote(sf::RenderWindow& window);
 
 	//Оновлення ноти
-	void updateNote();
+	void updateNote(sf::Time deltaTime);
 };
 
 

@@ -103,8 +103,9 @@ private:
 
 
 	// - - - Гравець:
-	/* Not yet*/
+	int health;
 	
+	sf::Text gameOverText;
 
 
 	// - - - Hit - Miss система:
@@ -147,7 +148,7 @@ private:
 	//Годинник
 	sf::Clock clock;
 
-
+	sf::Clock frameClock;
 
 	// - - - Ініціалізація:
 	
@@ -161,10 +162,14 @@ private:
 	void initChecker();
 	//Ініціалізація меню
 	void initMenu();
+	//Ініціалізація програшу
+	void initGameOver();
 	//Ініціалізація музики
 	void initMusic();
 	//Спавн нот
 	void spawnNotes();
+	//Рестарт гри
+	void resetGame();
 	//Ініціалізація панелі з інформацією
 	void initInfo();
 
@@ -216,6 +221,9 @@ public:
 
 	//Рендер інформаційної панелі
 	void renderInfo();
+
+	//Рендер екрану програшу
+	void renderGameOver();
 
 	//Оновлення усього
 	void update();

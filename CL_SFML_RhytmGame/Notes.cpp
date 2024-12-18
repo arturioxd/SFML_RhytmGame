@@ -41,11 +41,11 @@ void Notes::renderNote(sf::RenderWindow& window)
 	}
 }
 
-void Notes::updateNote()
+void Notes::updateNote(sf::Time deltaTime)	
 {
 	if (isActive)
 	{
-		this->singleNote.move(0.f, 0.1);
+		this->singleNote.move(0.f, 200.0f * deltaTime.asSeconds());
 	}
 }
 

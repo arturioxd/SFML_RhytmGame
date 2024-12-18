@@ -3,14 +3,16 @@
 Game::Game() 
 {
 	this->currentState = GameState::MENU;
+	this->initVariables();
 	this->initMenu();
 	this->initMusic();
 	this->initWindow();
 	this->initInfo();
-	this->initVariables();
 	this->initNoteLine();
 	this->initChecker();
-	
+	this->initGameOver();
+	this->window->setFramerateLimit(60);
+
 	this->keyPressTimers = std::vector<int>(3, 0);
 }
 
@@ -25,7 +27,7 @@ Game:: ~Game()
 
 void Game::initWindow() 
 {
-	this->videoMode.height = 800;
+	this->videoMode.height = 700;
 	this->videoMode.width = 600;
 	this->window = new sf::RenderWindow(this->videoMode, "Rhytm!", sf::Style::Close);
 
@@ -58,6 +60,8 @@ void Game::initVariables()
 	this->spawnInterval = (60.0f / this->BPM) * 1000.0f;
 
 	this->delayTime = 3.f;
+
+	this->health = 3;
 
 }
 
@@ -98,7 +102,7 @@ void Game::initMenu()
 	this->title.setPosition(150.f, 200.f);
 
 	this->instructions.setFont(this->font);
-	this->instructions.setString("Press Enter to Start");
+	this->instructions.setString("Press [Enter] to Start\nUse [A] [S] [D] buttons to play!");
 	this->instructions.setCharacterSize(20);
 	this->instructions.setFillColor(sf::Color::Black);
 	this->instructions.setPosition(200.f, 300.f);
@@ -122,23 +126,32 @@ void Game::initInfo()
 {
 	
 	this->showScore.setFont(this->font);
-	this->showScore.setCharacterSize(20);
+	this->showScore.setCharacterSize(40);
 	this->showScore.setFillColor(sf::Color::Black);
-	this->showScore.setPosition(50, 650);
+	this->showScore.setPosition(20, 620);
 
 	this->showCurrentStreak.setFont(this->font);
-	this->showCurrentStreak.setCharacterSize(20);
+	this->showCurrentStreak.setCharacterSize(40);
 	this->showCurrentStreak.setFillColor(sf::Color::Black);
-	this->showCurrentStreak.setPosition(230, 650);
+	this->showCurrentStreak.setPosition(220, 620);
 
 	this->showBestStreak.setFont(this->font);
-	this->showBestStreak.setCharacterSize(20);
+	this->showBestStreak.setCharacterSize(40);
 	this->showBestStreak.setFillColor(sf::Color::Black);
-	this->showBestStreak.setPosition(430, 650);
+	this->showBestStreak.setPosition(420, 620);
 	
 	this->infoShape.setFillColor(sf::Color(225, 192, 203));
 	this->infoShape.setPosition(sf::Vector2f(0.f, 600.f));
-	this->infoShape.setSize(sf::Vector2f(600.f, 200.f));
+	this->infoShape.setSize(sf::Vector2f(600.f, 100.f));
+}
+
+void Game::initGameOver()
+{
+	this->gameOverText.setFont(this->font);
+	this->gameOverText.setString("Game Over ! \nPress [R] to try again");
+	this->gameOverText.setCharacterSize(50);
+	this->gameOverText.setFillColor(sf::Color::Red);
+	this->gameOverText.setPosition(100.f, 200.f);
 }
 
 void Game::spawnNotes()
@@ -167,6 +180,22 @@ void Game::spawnNotes()
 
 		this->noteSpawnClock.restart();
 	}
+}
+
+void Game::resetGame()
+{
+	this->score = 0;
+	this->currentStreak = 0;
+	this->bestStreak = 0;
+	this->health = 3;
+
+	this->notes.clear(); 
+	this->backgroundMusic.stop();
+	this->isMusicPlaying = false; 
+	this->delayMusicClock.restart();
+
+	this->showHitTrueText = false;
+	this->showHitFalseText = false;
 }
 
 
@@ -218,8 +247,9 @@ void Game::hitTrue()
 void Game::hitFalse()
 {
 	this->currentStreak = 0;
-	this->window->draw(hitFalseText);
+	this->health--;
 
+	this->window->draw(hitFalseText);
 
 	this->showHitTrueText = false;
 	this->showHitFalseText = true;
@@ -284,6 +314,18 @@ void Game::pollEvents()
 			}
 			}
 		}
+		else if (this->currentState == GAME_OVER)
+		{
+			if (ev.type == sf::Event::KeyPressed && ev.key.code == sf::Keyboard::R)
+			{
+				this->resetGame();
+				this->currentState = PLAYING;
+			}
+			else if (ev.type == sf::Event::KeyPressed && ev.key.code == sf::Keyboard::Escape)
+			{
+				this->window->close();
+			}
+		}
 		
 	}
 }
@@ -318,14 +360,16 @@ void Game::updateMenu()
 void Game::updateInfo()
 {
 	this->showScore.setString("Score: " + std::to_string(this->score));
-	this->showCurrentStreak.setString("Current streak: " + std::to_string(this->currentStreak));
-	this->showBestStreak.setString("Best streak: " + std::to_string(this->bestStreak));
+	this->showCurrentStreak.setString("Streak: " + std::to_string(this->currentStreak));
+	this->showBestStreak.setString("Health: " + std::to_string(this->health));
 }
 
 void Game::update()
 {
+	sf::Time deltaTime = this->frameClock.restart();
+
 	this->pollEvents();
-	if (this->currentState == PLAYING)
+	if (this->currentState == PLAYING && this->health > 0)
 	{
 		this->updateNoteLine();
 		this->updateChecker();
@@ -352,9 +396,13 @@ void Game::update()
 			}
 			else
 			{
-				notes[i].updateNote();
+				notes[i].updateNote(deltaTime);
 			}
 		}
+	}
+	else if (this->health == 0)
+	{
+		this->currentState = GAME_OVER;
 	}
 }
 
@@ -384,6 +432,12 @@ void Game::renderInfo()
 	this->window->draw(showCurrentStreak);
 	this->window->draw(showBestStreak);
 
+}
+
+void Game::renderGameOver()
+{
+	this->window->draw(gameOverText);
+	this->backgroundMusic.stop();
 }
 
 void Game::render() 
@@ -417,6 +471,10 @@ void Game::render()
 			this->window->draw(hitFalseText);
 		}
 
+	}
+	else if (this->currentState == GAME_OVER)
+	{
+		this->renderGameOver();
 	}
 	this->window->display();
 } 
